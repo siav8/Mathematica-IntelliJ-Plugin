@@ -30,12 +30,14 @@ import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import de.halirutan.mathematica.MathematicaFileTemplateProvider;
 import de.halirutan.mathematica.MathematicaIcons;
+import de.halirutan.mathematica.sdk.MathematicaSdkType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,6 +58,11 @@ public class MathematicaModuleBuilder extends JavaModuleBuilder {
 
   public MathematicaModuleBuilder(ProjectType type) {
     myProjectType = type;
+  }
+
+  @Override
+  public boolean isSuitableSdkType(final SdkTypeId sdkType) {
+    return sdkType == MathematicaSdkType.getInstance();
   }
 
   public void setupRootModel(final ModifiableRootModel rootModel) throws ConfigurationException {

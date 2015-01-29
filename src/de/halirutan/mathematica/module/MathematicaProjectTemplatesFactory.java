@@ -27,6 +27,8 @@ import com.intellij.platform.ProjectTemplatesFactory;
 import com.intellij.platform.templates.BuilderBasedTemplate;
 import de.halirutan.mathematica.MathematicaBundle;
 import de.halirutan.mathematica.MathematicaIcons;
+import de.halirutan.mathematica.module.MathematicaModuleBuilder.Application;
+import de.halirutan.mathematica.module.MathematicaModuleBuilder.Basic;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,11 +64,11 @@ public class MathematicaProjectTemplatesFactory extends ProjectTemplatesFactory 
         new MathematicaProjectTemplate(BASIC_MODULE,
             MathematicaBundle.message("project.template.basic.description"),
             // The descriptions should be reworked when the plugin is more mature
-            new MathematicaModuleBuilder.Basic()),
+            new Basic()),
 
         new MathematicaProjectTemplate(APPLICATION_MODULE,
             MathematicaBundle.message("project.template.application.description"),
-            new MathematicaModuleBuilder.Application())
+            new Application())
     };
 
     if (context.getProject() == null) {

@@ -23,6 +23,7 @@ package de.halirutan.mathematica.sdk;
 
 import com.intellij.openapi.projectRoots.*;
 import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -51,7 +52,9 @@ public class MathematicaSdkType extends SdkType {
 
   @NotNull
   public static MathematicaSdkType getInstance() {
-    return SdkType.findInstance(MathematicaSdkType.class);
+    MathematicaSdkType instance = SdkType.findInstance(MathematicaSdkType.class);
+    assert instance != null : "MathematicaSDK needs to be registered in plugin.xml!";
+    return instance;
   }
 
   /**
@@ -101,10 +104,11 @@ public class MathematicaSdkType extends SdkType {
   @Nullable
   @Override
   public String suggestHomePath() {
-    final String property = System.getProperty("os.name");
     String path = "";
-    if (property.matches("Linux.*")) {
+    if (SystemInfo.isLinux) {
       path = "/usr/local/Wolfram";
+    } else if(SystemInfo.isMac) {
+      path = "/Applications/Mathematica.app";
     }
     if (new File(path).exists()) {
       return path;
