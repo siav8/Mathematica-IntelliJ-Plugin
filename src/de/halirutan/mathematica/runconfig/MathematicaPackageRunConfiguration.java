@@ -23,18 +23,18 @@ package de.halirutan.mathematica.runconfig;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunConfigurationBase;
-import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.configurations.RuntimeConfigurationException;
+import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.util.xmlb.XmlSerializer;
+import de.halirutan.mathematica.sdk.MathematicaSdkType;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,10 +42,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static de.halirutan.mathematica.MathematicaBundle.*;
+
 /**
  * @author patrick (15.01.15)
  */
-public class MathematicaPackageRunConfiguration extends RunConfigurationBase {
+public class MathematicaPackageRunConfiguration extends RunConfigurationBase implements RunConfigurationWithSuppressedDefaultDebugAction {
 
   private String myPackageContextToLoad = "";
   private String myPathToAdd = "";
@@ -58,7 +60,7 @@ public class MathematicaPackageRunConfiguration extends RunConfigurationBase {
 
 
   protected MathematicaPackageRunConfiguration(final Project project) {
-    super(project, new MathematicaPackageConfigurationFactory(), "Run a Package");
+    super(project, new MathematicaPackageConfigurationFactory(), message("run.config.package.name"));
     myProject = project;
     myPackageContextToLoad = project.getName() + "`";
     myPathToAdd = project.getBasePath();
@@ -66,8 +68,14 @@ public class MathematicaPackageRunConfiguration extends RunConfigurationBase {
 
   @Override
   public void checkConfiguration() throws RuntimeConfigurationException {
-
+    // We need a Mathematica SDK to find the correct Mathematica installation
+    final Sdk projectSdk = ProjectRootManager.getInstance(myProject).getProjectSdk();
+    if (projectSdk == null || projectSdk.getSdkType() != MathematicaSdkType.getInstance()) {
+      throw new RuntimeConfigurationError(message("sdk.not.defined"));
+    }
   }
+
+
 
   public Collection<VirtualFile> getNotebookFilesOfProject() {
     final Collection<VirtualFile> allFiles = FilenameIndex.getAllFilesByExt(myProject, "nb");
@@ -87,7 +95,7 @@ public class MathematicaPackageRunConfiguration extends RunConfigurationBase {
   @Nullable
   @Override
   public RunProfileState getState(@NotNull final Executor executor, @NotNull final ExecutionEnvironment environment) throws ExecutionException {
-    return null;
+    return new MathematicaRunState(environment);
   }
 
   public void setPackageContextToLoad(@NotNull final String context) {
@@ -130,5 +138,17 @@ public class MathematicaPackageRunConfiguration extends RunConfigurationBase {
 
   public void setOpenExistingNotebook(final boolean openExistingNotebook) {
     this.myOpenExistingNotebook = openExistingNotebook;
+  }
+
+  @Override
+  public void writeExternal(@NotNull Element element) throws WriteExternalException {
+    super.writeExternal(element);
+    XmlSerializer.serializeInto(this, element);
+  }
+
+  @Override
+  public void readExternal(@NotNull Element element) throws InvalidDataException {
+    super.readExternal(element);
+    XmlSerializer.deserializeInto(this, element);
   }
 }

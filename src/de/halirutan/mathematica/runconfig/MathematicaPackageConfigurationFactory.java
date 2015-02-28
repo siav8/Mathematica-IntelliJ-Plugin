@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project;
  * @author patrick (29.01.15)
  */
 public class MathematicaPackageConfigurationFactory extends ConfigurationFactory {
+  private static final MathematicaPackageConfigurationFactory ourInstance = new MathematicaPackageConfigurationFactory();
 
   public MathematicaPackageConfigurationFactory() {
     super(MathematicaConfigurationType.getInstance());
@@ -39,9 +40,12 @@ public class MathematicaPackageConfigurationFactory extends ConfigurationFactory
     return new MathematicaPackageRunConfiguration(project);
   }
 
+  public static MathematicaPackageConfigurationFactory getInstance() {
+    return ourInstance;
+  }
 
   @Override
   public String getName() {
-    return "Run a Mathematica Notebook";
+    return "Run a package in Mathematica";
   }
 }
