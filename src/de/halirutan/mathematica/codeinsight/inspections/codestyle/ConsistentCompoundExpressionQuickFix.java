@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Patrick Scheibe
+ * Copyright (c) 2017 Patrick Scheibe
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -30,6 +30,8 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
+import de.halirutan.mathematica.parsing.psi.api.Expression;
+import de.halirutan.mathematica.parsing.psi.util.MathematicaPsiElementFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -50,13 +52,18 @@ public class ConsistentCompoundExpressionQuickFix extends LocalQuickFixBase impl
     final PsiElement elm = descriptor.getPsiElement();
 
     if (!FileModificationService.getInstance().prepareFileForWrite(elm.getContainingFile())) return;
-
     final PsiDocumentManager manager = PsiDocumentManager.getInstance(project);
     final Document doc = manager.getDocument(elm.getContainingFile());
-    if (doc != null && doc.isWritable()) {
-      doc.insertString(descriptor.getTextRangeInElement().getEndOffset(), ";");
-    } else {
-      LOG.warn("Document was null or not writable!");
+
+    if (doc == null) {
+      return;
     }
+
+    MathematicaPsiElementFactory factory = new MathematicaPsiElementFactory(project);
+    final Expression epxr = factory.createExpressionFromText("1;");
+    final PsiElement semicolon = epxr.getLastChild();
+    elm.addAfter(semicolon, elm.getLastChild());
+    manager.commitDocument(doc);
+    manager.doPostponedOperationsAndUnblockDocument(doc);
   }
 }
